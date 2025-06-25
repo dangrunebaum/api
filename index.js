@@ -2,18 +2,20 @@ const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
 require('dotenv').config();
+
 const app = express();
 app.use(cors());
 
+// Root route (keep this)
 app.get('/', (req, res) => {
   res.send('API is running!');
 });
 
-// Add this route for image search
+// ADD this route for image search
 app.get('/api/images', async (req, res) => {
   const userQuery = req.query.q || '';
-  const apiKey = process.env.GOOGLE_API_KEY; // Store in .env
-  const cx = process.env.GOOGLE_CX;         // Store in .env
+  const apiKey = process.env.GOOGLE_API_KEY;
+  const cx = process.env.GOOGLE_CX;
   const query = `great wave off kanagawa ${userQuery}`;
   const url = `https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(query)}&cx=${cx}&searchType=image&key=${apiKey}&num=6`;
 
