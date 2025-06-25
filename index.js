@@ -37,6 +37,9 @@ app.get('/api/images', async (req, res) => {
   }
 });
 
+console.log('GOOGLE_API_KEY:', process.env.GOOGLE_API_KEY);
+console.log('GOOGLE_CX:', process.env.GOOGLE_CX);
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
