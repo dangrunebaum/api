@@ -27,6 +27,12 @@ app.get('/api/images', async (req, res) => {
     }));
     res.json(images);
   } catch (error) {
+    // Add this for detailed logging:
+    if (error.response) {
+      console.error('Google API error:', error.response.status, error.response.data);
+    } else {
+      console.error('Google API error:', error.message);
+    }
     res.status(500).json({ error: 'Failed to fetch images' });
   }
 });
