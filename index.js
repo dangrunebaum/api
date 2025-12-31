@@ -75,6 +75,30 @@ app.get("/api/images", async (req, res) => {
       link: item.link,
       title: item.title,
     }));
+
+    // Firestore logic: save under words collection
+    const wordRef = db.collection("words").doc(userQuery);
+    await db.runTransaction(async (t) => {
+      const doc = await t.get(wordRef);
+      if (!doc.exists) {
+        t.set(wordRef, { count: 1, images });
+      } else {
+        const data = doc.data();
+        // Merge new images, avoiding duplicates by link
+        const existingLinks = new Set(
+          (data.images || []).map((img) => img.link)
+        );
+        const mergedImages = [
+          ...(data.images || []),
+          ...images.filter((img) => !existingLinks.has(img.link)),
+        ];
+        t.update(wordRef, {
+          count: (data.count || 0) + 1,
+          images: mergedImages,
+        });
+      }
+    });
+
     res.json(images);
   } catch (error) {
     // Add this for detailed logging:
