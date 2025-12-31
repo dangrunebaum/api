@@ -6,6 +6,8 @@ require("dotenv").config();
 const dns = require("dns").promises;
 const geoip = require("geoip-lite");
 
+const db = require("./firebaseAdmin");
+
 const app = express();
 app.use(cors());
 app.use(express.json());
