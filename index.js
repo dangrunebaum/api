@@ -117,6 +117,91 @@ app.get("/api/images", async (req, res) => {
   }
 });
 
+// Multilang endpoint for Great Wave translations
+app.get("/api/images/multilang", async (req, res) => {
+  const userQuery = req.query.q || "";
+  const apiKey = process.env.GOOGLE_API_KEY;
+  const cx = process.env.GOOGLE_CX;
+
+  // Top 10 most commonly spoken languages with translations
+  const languages = [
+    { code: "en", label: "English", translation: "Great Wave off Kanagawa" },
+    { code: "zh", label: "Chinese", translation: "神奈川沖浪裏" },
+    { code: "hi", label: "Hindi", translation: "कानागावा की महान लहर" },
+    { code: "es", label: "Spanish", translation: "La gran ola de Kanagawa" },
+    { code: "fr", label: "French", translation: "La Grande Vague de Kanagawa" },
+    {
+      code: "ar",
+      label: "Arabic",
+      translation: "الموجة العظيمة قبالة كاناغاوا",
+    },
+    {
+      code: "pt",
+      label: "Portuguese",
+      translation: "A Grande Onda de Kanagawa",
+    },
+    { code: "ru", label: "Russian", translation: "Большая волна в Канагаве" },
+    { code: "ja", label: "Japanese", translation: "神奈川沖浪裏" },
+    {
+      code: "de",
+      label: "German",
+      translation: "Die große Welle vor Kanagawa",
+    },
+  ];
+
+  try {
+    const results = await Promise.all(
+      languages.map(async (lang) => {
+        const query = `${lang.translation} ${userQuery}`.trim();
+        const url = `https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(
+          query
+        )}&cx=${cx}&searchType=image&key=${apiKey}&num=1`;
+
+        try {
+          const response = await axios.get(url);
+          const items = response.data.items;
+
+          if (items && items.length > 0) {
+            return {
+              language: lang.label,
+              languageCode: lang.code,
+              query: query,
+              image: {
+                link: items[0].link,
+                title: items[0].title,
+                thumbnail: items[0].image?.thumbnailLink || null,
+              },
+            };
+          } else {
+            return {
+              language: lang.label,
+              languageCode: lang.code,
+              query: query,
+              image: null,
+            };
+          }
+        } catch (error) {
+          console.error(
+            `Error fetching images for ${lang.label}:`,
+            error.message
+          );
+          return {
+            language: lang.label,
+            languageCode: lang.code,
+            query: query,
+            image: null,
+          };
+        }
+      })
+    );
+
+    res.json(results);
+  } catch (error) {
+    console.error("Multilang API error:", error.message);
+    res.status(500).json({ error: "Failed to fetch multilingual images" });
+  }
+});
+
 console.log("GOOGLE_API_KEY:", process.env.GOOGLE_API_KEY);
 console.log("GOOGLE_CX:", process.env.GOOGLE_CX);
 
